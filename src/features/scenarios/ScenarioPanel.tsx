@@ -11,7 +11,9 @@ import type {
   LatencyProject,
   ScenarioSnapshot,
 } from "../../shared/domain/types";
+import type { OverlayTimeline } from "../../shared/domain/comparisonTimeline";
 import type { ScenarioComparison } from "./scenarioViewModel";
+import ComparisonTimeline from "./ComparisonTimeline";
 
 interface Props {
   project: LatencyProject;
@@ -21,6 +23,7 @@ interface Props {
   baseline?: ScenarioSnapshot;
   comparison?: ScenarioSnapshot;
   comparisonResult?: ScenarioComparison;
+  overlayTimeline?: OverlayTimeline;
   onSelectBaseline: (id: string) => void;
   onSelectComparison: (id: string) => void;
 }
@@ -39,6 +42,7 @@ export default function ScenarioPanel({
   baseline,
   comparison,
   comparisonResult,
+  overlayTimeline,
   onSelectBaseline,
   onSelectComparison,
 }: Props) {
@@ -154,6 +158,13 @@ export default function ScenarioPanel({
                 </small>
               </article>
             </div>
+          )}
+          {baseline && comparison && overlayTimeline && (
+            <ComparisonTimeline
+              overlay={overlayTimeline}
+              baselineName={baseline.name}
+              comparisonName={comparison.name}
+            />
           )}
           <div className="snapshot-list">
             <div className="snapshot-heading">

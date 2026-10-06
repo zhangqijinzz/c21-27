@@ -97,6 +97,7 @@ export function saveScenario(
     nodes: structuredClone(project.nodes),
     completionMs: result.completionMs,
     criticalPath: [...result.criticalPath],
+    mode: result.mode,
   };
   return {
     ...project,

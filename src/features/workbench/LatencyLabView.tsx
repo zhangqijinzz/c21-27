@@ -169,6 +169,7 @@ export default function LatencyLabView() {
               baseline={vm.baselineScenario}
               comparison={vm.comparisonScenario}
               comparisonResult={vm.scenarioComparison}
+              overlayTimeline={vm.overlayTimeline}
               onSelectBaseline={(id) =>
                 vm.selectComparisonScenario("baselineId", id)
               }

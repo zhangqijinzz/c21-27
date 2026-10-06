@@ -89,6 +89,11 @@ function parseScenario(value: unknown): ScenarioSnapshot | undefined {
     criticalPath: value.criticalPath.filter(
       (id): id is string => typeof id === "string",
     ),
+    ...(value.mode === "low" ||
+    value.mode === "high" ||
+    value.mode === "expected"
+      ? { mode: value.mode }
+      : {}),
   };
 }
 

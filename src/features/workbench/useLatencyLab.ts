@@ -26,6 +26,7 @@ import {
   saveScenario,
   type ScenarioComparison,
 } from "../scenarios/scenarioViewModel";
+import { buildOverlayTimeline } from "../../shared/domain/comparisonTimeline";
 import { removeProject, updateProject } from "../projects/projectViewModel";
 import { simulateProject } from "../../shared/domain/simulation";
 
@@ -63,19 +64,40 @@ export function useLatencyLab() {
     () => (activeProject ? getGraphAnalysis(activeProject) : undefined),
     [activeProject],
   );
-  const scenarioList = activeProject?.scenarios ?? [];
-  const baselineScenario =
-    scenarioList.find((scenario) => scenario.id === comparisonIds.baselineId) ??
-    scenarioList[1] ??
-    scenarioList[0];
-  const comparisonScenario =
-    scenarioList.find(
-      (scenario) => scenario.id === comparisonIds.comparisonId,
-    ) ?? scenarioList[0];
-  const scenarioComparison: ScenarioComparison | undefined =
-    baselineScenario && comparisonScenario
-      ? compareScenarios(baselineScenario, comparisonScenario)
-      : undefined;
+  const scenarioList = useMemo(
+    () => activeProject?.scenarios ?? [],
+    [activeProject],
+  );
+  const baselineScenario = useMemo(
+    () =>
+      scenarioList.find(
+        (scenario) => scenario.id === comparisonIds.baselineId,
+      ) ??
+      scenarioList[1] ??
+      scenarioList[0],
+    [scenarioList, comparisonIds.baselineId],
+  );
+  const comparisonScenario = useMemo(
+    () =>
+      scenarioList.find(
+        (scenario) => scenario.id === comparisonIds.comparisonId,
+      ) ?? scenarioList[0],
+    [scenarioList, comparisonIds.comparisonId],
+  );
+  const scenarioComparison: ScenarioComparison | undefined = useMemo(
+    () =>
+      baselineScenario && comparisonScenario
+        ? compareScenarios(baselineScenario, comparisonScenario)
+        : undefined,
+    [baselineScenario, comparisonScenario],
+  );
+  const overlayTimeline = useMemo(
+    () =>
+      baselineScenario && comparisonScenario
+        ? buildOverlayTimeline(baselineScenario, comparisonScenario, mode)
+        : undefined,
+    [baselineScenario, comparisonScenario, mode],
+  );
   const simulationValid =
     Boolean(activeProject) &&
     result?.entries.length === activeProject?.nodes.length;
@@ -299,6 +321,7 @@ export function useLatencyLab() {
     baselineScenario,
     comparisonScenario,
     scenarioComparison,
+    overlayTimeline,
     selectComparisonScenario,
   };
 }
