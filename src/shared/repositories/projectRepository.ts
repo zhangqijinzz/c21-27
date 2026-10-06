@@ -66,7 +66,7 @@ function parseScenario(value: unknown): ScenarioSnapshot | undefined {
     !Array.isArray(value.criticalPath)
   )
     return undefined;
-  const { id, name, createdAt, concurrencyLimit, completionMs } = value;
+  const { id, name, createdAt, concurrencyLimit, completionMs, mode } = value;
   if (
     typeof id !== "string" ||
     typeof name !== "string" ||
@@ -78,6 +78,7 @@ function parseScenario(value: unknown): ScenarioSnapshot | undefined {
     id,
     name,
     createdAt,
+    mode: mode === "low" || mode === "high" ? mode : "expected",
     completionMs,
     concurrencyLimit:
       typeof concurrencyLimit === "number" && concurrencyLimit > 0

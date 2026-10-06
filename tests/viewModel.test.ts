@@ -5,6 +5,7 @@ import {
   selectProject,
 } from "../src/features/projects/projectViewModel";
 import {
+  buildScenarioTimeline,
   compareScenarios,
   restoreScenario,
   saveScenario,
@@ -85,5 +86,78 @@ describe("project and scenario view models", () => {
     expect(comparison.deltaMs).toBeGreaterThan(0);
     expect(comparison.changes.join(" ")).toContain("并发上限");
     expect(comparison.changes.join(" ")).toContain("耗时");
+  });
+
+  it("keeps changed nodes on stable rows when building an overlay timeline", () => {
+    const node = (
+      id: string,
+      name: string,
+      durationMs: number,
+      dependencyIds: string[] = [],
+    ) => ({
+      id,
+      name,
+      durationMs,
+      jitterMs: 0,
+      dependencyIds,
+      timeoutMs: 500,
+      retryCount: 0,
+      failureRate: 0,
+    });
+    const baselineProject = {
+      ...EXAMPLE_PROJECT,
+      concurrencyLimit: null,
+      nodes: [
+        node("a", "入口", 100),
+        node("b", "串行中间层", 100, ["a"]),
+        node("c", "结果", 100, ["b"]),
+      ],
+    };
+    const comparisonProject = {
+      ...baselineProject,
+      nodes: [
+        node("a", "入口", 100),
+        node("c", "结果", 100, ["a"]),
+        node("d", "旁路缓存", 50, ["a"]),
+      ],
+    };
+    const baseline = saveScenario(
+      baselineProject,
+      simulateProject(baselineProject),
+      "基准",
+    ).scenarios[0];
+    const comparison = saveScenario(
+      comparisonProject,
+      simulateProject(comparisonProject),
+      "对照",
+    ).scenarios[0];
+    if (!baseline || !comparison) throw new Error("Snapshots should be saved");
+    const timeline = buildScenarioTimeline(baseline, comparison);
+    expect(timeline.rows.map((row) => row.id)).toEqual(["a", "b", "c", "d"]);
+    expect(timeline.rows.map((row) => row.status)).toEqual([
+      "shared",
+      "removed",
+      "shared",
+      "added",
+    ]);
+    const result = timeline.rows.find((row) => row.id === "c");
+    expect(result?.startDeltaMs).toBe(-100);
+    expect(result?.waitDeltaMs).toBe(0);
+    expect(timeline.baselineResult.criticalPath).toEqual(["a", "b", "c"]);
+    expect(timeline.comparisonResult.criticalPath).toEqual(["a", "c"]);
+    expect(timeline.criticalLinks).toContainEqual({
+      side: "comparison",
+      from: "a",
+      to: "c",
+    });
+  });
+
+  it("preserves the selected simulation mode in snapshots", () => {
+    const snapshot = saveScenario(
+      EXAMPLE_PROJECT,
+      simulateProject(EXAMPLE_PROJECT, "low"),
+      "乐观快照",
+    ).scenarios[0];
+    expect(snapshot?.mode).toBe("low");
   });
 });

@@ -12,6 +12,7 @@ import type {
   ScenarioSnapshot,
 } from "../../shared/domain/types";
 import type { ScenarioComparison } from "./scenarioViewModel";
+import CompareTimeline from "./CompareTimeline";
 
 interface Props {
   project: LatencyProject;
@@ -154,6 +155,9 @@ export default function ScenarioPanel({
                 </small>
               </article>
             </div>
+          )}
+          {baseline && comparison && (
+            <CompareTimeline baseline={baseline} comparison={comparison} />
           )}
           <div className="snapshot-list">
             <div className="snapshot-heading">

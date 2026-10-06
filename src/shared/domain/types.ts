@@ -14,6 +14,7 @@ export interface ScenarioSnapshot {
   id: string;
   name: string;
   createdAt: number;
+  mode: SimulationMode;
   concurrencyLimit: number | null;
   nodes: RequestNode[];
   completionMs: number;
